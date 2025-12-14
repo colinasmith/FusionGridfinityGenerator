@@ -146,6 +146,30 @@ def initDefaultUiState():
     global commandUIState
     global actualDimensionsTableUiState
     global commandCompartmentsTableUIState
+
+    commandCompartmentsTableUIState = []
+    recordedDefaults = configUtils.readJsonConfig(UI_INPUT_DEFAULTS_CONFIG_PATH)
+    if recordedDefaults is not None and 'static_ui' in recordedDefaults and 'compartments_table' in recordedDefaults:
+        staticUiState = recordedDefaults['static_ui']
+        compartmentsTableState = recordedDefaults['compartments_table']
+        if staticUiState is not None:
+            futil.log(f'{CMD_NAME} Found previously saved default values, restoring {staticUiState}')
+
+            try:
+                commandUIState.initValues(staticUiState)
+                futil.log(f'{CMD_NAME} Successfully restored default values')
+            except Exception as err:
+                futil.log(f'{CMD_NAME} Failed to restore default values, err: {err}')
+        if compartmentsTableState is not None and isinstance(compartmentsTableState, list):
+            futil.log(f'{CMD_NAME} Found previously saving default values for compartments table, restoring {compartmentsTableState}')
+            try:
+                for row in compartmentsTableState:
+                    commandCompartmentsTableUIState.append(CommandUiState(CMD_NAME))
+                    commandCompartmentsTableUIState[-1].initValues(row)
+                futil.log(f'{CMD_NAME} Successfully restored compartments table default values')
+            except Exception as err:
+                futil.log(f'{CMD_NAME} Failed to restore default values, err: {err}')
+
     commandUIState.initValue(INFO_GROUP, True, adsk.core.GroupCommandInput.classType())
     commandUIState.initValue(BIN_BASIC_SIZES_GROUP, True, adsk.core.GroupCommandInput.classType())
     commandUIState.initValue(BIN_DIMENSIONS_GROUP, True, adsk.core.GroupCommandInput.classType())
@@ -195,28 +219,6 @@ def initDefaultUiState():
     commandUIState.initValue(BIN_MAGNET_CHAMFER_XY_INPUT, const.DIMENSION_MAGNET_CUTOUT_CHAMFER_XY, adsk.core.ValueCommandInput.classType())
     commandUIState.initValue(BIN_MAGNET_CHAMFER_Z_INPUT, const.DIMENSION_MAGNET_CUTOUT_CHAMFER_Z, adsk.core.ValueCommandInput.classType())
 
-    commandCompartmentsTableUIState = []
-    recordedDefaults = configUtils.readJsonConfig(UI_INPUT_DEFAULTS_CONFIG_PATH)
-    if recordedDefaults is not None and 'static_ui' in recordedDefaults and 'compartments_table' in recordedDefaults:
-        staticUiState = recordedDefaults['static_ui']
-        compartmentsTableState = recordedDefaults['compartments_table']
-        if staticUiState is not None:
-            futil.log(f'{CMD_NAME} Found previously saved default values, restoring {staticUiState}')
-
-            try:
-                commandUIState.initValues(staticUiState)
-                futil.log(f'{CMD_NAME} Successfully restored default values')
-            except Exception as err:
-                futil.log(f'{CMD_NAME} Failed to restore default values, err: {err}')
-        if compartmentsTableState is not None and isinstance(compartmentsTableState, list):
-            futil.log(f'{CMD_NAME} Found previously saving default values for compartments table, restoring {compartmentsTableState}')
-            try:
-                for row in compartmentsTableState:
-                    commandCompartmentsTableUIState.append(CommandUiState(CMD_NAME))
-                    commandCompartmentsTableUIState[-1].initValues(row)
-                futil.log(f'{CMD_NAME} Successfully restored compartments table default values')
-            except Exception as err:
-                futil.log(f'{CMD_NAME} Failed to restore default values, err: {err}')
     futil.log(f'{CMD_NAME} UI state initialized')
 
 def getErrorMessage(text = "An unknown error occurred, please validate your inputs and try again"):
